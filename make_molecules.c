@@ -91,7 +91,7 @@ void makeRadical(int atom, int type)
 void *hReady( void *arg )
 {
 	int id = *((int *)arg);
-	sem_wait(&mutex);  /*let no thread run before printing done*/
+	sem_wait(&mutex);  
 	sem_post(&h_wait);
 	//sem_wait(&print_lock);
 	printf("h%d is alive\n", id);
@@ -192,21 +192,24 @@ int main(int argc, char *argv[])
 	}
 	
 	sem_wait(&over_lock);  //gotta see 50 atoms go live before done.
-	
+	if(cCount >= 2 && hCount >= 1){
+		fprintf(stdout, "There is enough unused material to make at least
+one more molecule.  Starvation has occurred");
+	}
+	//release any atoms on wait queues
+	while(cCount >0){
+		sem_post($c_wait);
+		cCount-=1;
+	}
+	while(hCount >0){
+		sem_post(&h_wait);
+		hCount -=1;
+	}
 	
 	fprintf(stdout, "\n%d radicals created from:\n",molNum);
 	fprintf(stdout, "hydrogens: %d,  carbons: %d\n",hNum,cNum);
 	//fprintf(stdout, "%d molecules got\n",molNum);
 	//sem_post(&print_lock);
 	
-	/*
-	 * Now the tricky bit begins....  All the atoms are allowed
-	 * to go their own way, but how does the Interstellar Space
-	 * problem terminate? There is a non-zero probability that
-	 * some atoms will not become part of a radical; that is,
-	 * many atoms may be blocked on some semaphore variable of
-	 * our own devising. How do we ensure the program ends when
-	 * (a) all possible radicals have been created and (b) all
-	 * remaining atoms are blocked (i.e., not on the ready queue)?
-	 */
+	
 }
